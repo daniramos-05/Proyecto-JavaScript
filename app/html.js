@@ -48,6 +48,14 @@ function comprarClases() {
     saldo -= totalAPagar;
     actualizarEstado();
     guardarEnLocalStorage();
+
+    // Mostrar mensaje de compra de clases
+    alert(
+      "Se han comprado " +
+        cantidad +
+        " clase(s) el " +
+        fechaCompra.toLocaleString()
+    );
   } else {
     alert("Compra cancelada.");
   }
@@ -62,8 +70,21 @@ function comprarPremium() {
   );
 
   if (confirmacion) {
-    saldo -= membresiaPremium - membresiaBasica;
+    let pagoUsuario = parseFloat(
+      prompt("Ingrese el monto a pagar por la membresía Premium:")
+    );
+
+    if (
+      isNaN(pagoUsuario) ||
+      pagoUsuario < membresiaPremium - membresiaBasica
+    ) {
+      alert("El pago ingresado no es suficiente.");
+      return;
+    }
+
+    saldo -= pagoUsuario;
     actualizarEstado();
+    alert("¡La membresía se ha actualizado a Premium!");
     guardarEnLocalStorage();
   } else {
     alert("Compra cancelada.");
@@ -72,9 +93,19 @@ function comprarPremium() {
 
 // Función para actualizar el estado en el HTML //
 function actualizarEstado() {
-  document.getElementById("clasesCompradas").textContent =
-    "Clases compradas: " + clasesCompradas.length;
-  document.getElementById("saldo").textContent = "Saldo restante: $" + saldo;
+  // Verificar si los elementos existen antes de intentar acceder a ellos //
+  let clasesCompradasElement = document.getElementById("clasesCompradas");
+  let saldoElement = document.getElementById("saldo");
+
+  if (clasesCompradasElement && saldoElement) {
+    clasesCompradasElement.textContent =
+      "Clases compradas: " + clasesCompradas.length;
+    saldoElement.textContent = "Saldo restante: $" + saldo;
+  } else {
+    console.error(
+      "No se encontraron elementos con los IDs 'clasesCompradas' o 'saldo'."
+    );
+  }
 }
 
 // Función para guardar en el local storage //
@@ -83,16 +114,19 @@ function guardarEnLocalStorage() {
   localStorage.setItem("saldo", saldo);
 }
 
-// Asignar evento al botón para comprar clases //
-document.getElementById("comprarBtn").addEventListener("click", comprarClases);
-
-// Asignar evento al botón para comprar membresía premium //
-document
-  .getElementById("comprarPremiumBtn")
-  .addEventListener("click", comprarPremium);
-
-// Al cargar la página, se verifica si hay datos en el local storage y se actualiza el estado //
+// Al cargar la página, se asignan eventos y se verifica si hay datos en el local storage //
 window.addEventListener("load", function () {
+  // Asignar evento al botón para comprar clases //
+  document
+    .getElementById("comprarBtn")
+    .addEventListener("click", comprarClases);
+
+  // Asignar evento al botón para comprar membresía premium //
+  document
+    .getElementById("comprarPremiumBtn")
+    .addEventListener("click", comprarPremium);
+
+  // Verificar si hay datos en el local storage y actualizar el estado //
   if (localStorage.getItem("clasesCompradas")) {
     clasesCompradas = JSON.parse(localStorage.getItem("clasesCompradas"));
   }
